@@ -13,6 +13,8 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import fb.fandroid.adv.boundserviceapp.BoundService.MyBinder;
+
 /*
     При запуске приложения создать Bound Service
  в потоке которого постепенно будет меняться значение прогресса и,
@@ -38,6 +40,10 @@ public class MainActivity extends AppCompatActivity {
         Button printTimestampButton = (Button) findViewById(R.id.print_timestamp);
         Button stopServiceButon = (Button) findViewById(R.id.stop_service);
         final ProgressBar progressBar =(ProgressBar)findViewById(R.id.progressBar);
+
+        // visible the progress bar
+        progressBar.setVisibility(View.VISIBLE);
+
         //----progress bar here------------------------
         // Start long running operation in a background thread
         new Thread(new Runnable() {
