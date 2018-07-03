@@ -5,14 +5,16 @@
     android:background="#FFFFFF"
  >
 
-    <ImageView
-        android:id="@+id/imageView1"
+    <Button
+        android:id="@+id/progressbar_down"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="-80dp"
-       />
+        android:layout_alignBaseline="@+id/print_timestamp"
+        android:layout_alignBottom="@+id/print_timestamp"
+        android:layout_marginLeft="40dp"
+        android:layout_toStartOf="@+id/print_timestamp"
+        android:text="Progress Bar downgrade"
+        tools:layout_marginRight="10dp" />
 
     <Button
         android:id="@+id/print_timestamp"
@@ -53,5 +55,7 @@
         android:layout_marginTop="74dp"
         android:visibility="visible"
         tools:visibility="visible" />
+
+
 
 </RelativeLayout>

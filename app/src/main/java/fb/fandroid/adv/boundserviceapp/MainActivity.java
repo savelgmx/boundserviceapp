@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import fb.fandroid.adv.boundserviceapp.BoundService.MyBinder;
 
@@ -32,6 +33,10 @@ public class MainActivity extends AppCompatActivity {
     private int progressStatus=0;
     private Handler handler=new Handler();
 
+    private void showMessage(String string) {
+        Toast.makeText(this, string, Toast.LENGTH_LONG).show();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,10 +44,11 @@ public class MainActivity extends AppCompatActivity {
         final TextView timestampText = (TextView) findViewById(R.id.timestamp_text);
         Button printTimestampButton = (Button) findViewById(R.id.print_timestamp);
         Button stopServiceButon = (Button) findViewById(R.id.stop_service);
+        Button progressBarDownButton =(Button)findViewById(R.id.progressbar_down);
         final ProgressBar progressBar =(ProgressBar)findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);// visible the progress bar
 
-        // visible the progress bar
-        progressBar.setVisibility(View.VISIBLE);
+
 
         //----progress bar here------------------------
         // Start long running operation in a background thread
@@ -70,6 +76,20 @@ public class MainActivity extends AppCompatActivity {
 
         //----end progress bar starting---------------------
 
+        if (progressStatus==100){showMessage("Load is complete");}
+
+
+        progressBarDownButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (progressStatus>0) {
+                    progressStatus = progressStatus - 50;
+                    progressBar.setProgress(progressStatus);
+                }
+            }
+        });
+
 
 
         printTimestampButton.setOnClickListener(new View.OnClickListener() {
@@ -95,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
 
     @Override
     protected void onStart() {
