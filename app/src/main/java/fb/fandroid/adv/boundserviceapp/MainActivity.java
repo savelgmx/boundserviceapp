@@ -51,30 +51,14 @@ public class MainActivity extends AppCompatActivity {
 
 
         //----progress bar here------------------------
-        // Start long running operation in a background thread
-        new Thread(new Runnable() {
-            public void run() {
-                while (progressStatus < 100) {
+                 while (progressStatus < 100) {
                     progressStatus += 1;
                     // Update the progress bar and display the
                     //current value in the text view
-                    handler.post(new Runnable() {
-                        public void run() {
-                            progressBar.setProgress(progressStatus);
+                             progressBar.setProgress(progressStatus);
                             timestampText.setText(progressStatus+"/"+progressBar.getMax());
                         }
-                    });
-                    try {
-                        // Sleep for 200 milliseconds.
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
-
-        //----end progress bar starting---------------------
+         //----end progress bar starting---------------------
 
         if (progressStatus==100){showMessage("Load is complete");}
 
