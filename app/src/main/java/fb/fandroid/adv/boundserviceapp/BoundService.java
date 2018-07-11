@@ -10,6 +10,37 @@ import android.widget.Chronometer;
 
 /**
  * Created by andrew on 23.06.2018.
+ * andrew s, [11.07.18 12:55]
+ И что с ним надо сделать чтобы он запускал инкремент переменной счетчика каждые 2 секунды например?
+ Надо ли писать что-то вроде этого ниже
+ //========================================
+ class UpdateProgressBarTask extends TimerTask {
+
+
+ public void run() {
+ // инкремент переменной счетчика
+ counter=counter++;
+ }
+ }
+
+ TimerTask updateProgressBar = new UpdateProgressBarTask();
+ timer.scheduleAtFixedRate(updateProgressBar, 0, 2000); //2000millesec = 2sec
+ //======================================================
+
+ Marat Tanchuev, [11.07.18 13:06]
+ да
+
+ Marat Tanchuev, [11.07.18 13:06]
+ вот так и делай
+
+ Marat Tanchuev, [11.07.18 13:06]
+ в run() пишешь что надо сделать и всё
+
+ Marat Tanchuev, [11.07.18 13:06]
+ и запускаешь как тут написано
+ *
+ *
+ *
  */
 
 public class BoundService extends Service{
