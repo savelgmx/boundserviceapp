@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     BoundService mBoundService;
     boolean mServiceBound = false;
     private int progressStatus=0;
+
     private Handler handler=new Handler();
 
     private void showMessage(String string) {
@@ -41,26 +42,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final TextView timestampText = (TextView) findViewById(R.id.timestamp_text);
-        Button printTimestampButton = (Button) findViewById(R.id.print_timestamp);
+
+
         Button stopServiceButon = (Button) findViewById(R.id.stop_service);
         Button progressBarDownButton =(Button)findViewById(R.id.progressbar_down);
         final ProgressBar progressBar =(ProgressBar)findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);// visible the progress bar
 
-
-
-        //----progress bar here------------------------
-                 while (progressStatus < 100) {
-                    progressStatus += 1;
-                    // Update the progress bar and display the
-                    //current value in the text view
-                             progressBar.setProgress(progressStatus);
-                            timestampText.setText(progressStatus+"/"+progressBar.getMax());
-                        }
-         //----end progress bar starting---------------------
-
-        if (progressStatus==100){showMessage("Load is complete");}
 
 
         progressBarDownButton.setOnClickListener(new View.OnClickListener() {
@@ -74,16 +62,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-
-        printTimestampButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mServiceBound) {
-                    timestampText.setText(mBoundService.getTimestamp());
-                }
-            }
-        });
 
         stopServiceButon.setOnClickListener(new View.OnClickListener() {
             @Override
