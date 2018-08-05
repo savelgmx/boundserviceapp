@@ -7,7 +7,10 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -32,7 +35,12 @@ public class MainActivity extends AppCompatActivity {
     boolean mServiceBound = false;
     private int progressStatus=0;
 
-    private Handler handler=new Handler();
+    private static String LOG_TAG = "MainActivity";
+
+    TextView testTxt;
+    ProgressBar progressBar ;
+    final Messenger messenger = new Messenger(new IncomingHandler());
+    Messenger toServiceMessenger;
 
     private void showMessage(String string) {
         Toast.makeText(this, string, Toast.LENGTH_LONG).show();
@@ -108,6 +116,29 @@ public class MainActivity extends AppCompatActivity {
             BoundService.MyBinder myBinder = (BoundService.MyBinder) service;
             mBoundService = myBinder.getService();
             mServiceBound = true;
+
+
+
         }
     };
+
+    private class IncomingHandler extends Handler  {
+
+        @Override
+        public void handleMessage(Message msg){
+            switch (msg.what) {
+                 case BoundService.START_SCHEDULE:
+                    Log.d(LOG_TAG,"(schedule)...get count");
+                    testTxt.setText(""+msg.arg1);
+                    //-------progress bar------------------
+                    progressStatus=msg.arg1;
+                    progressBar.setProgress(progressStatus);
+                    //-------------------------------
+
+
+                    break;
+            }
+        }
+
+    }
 }
