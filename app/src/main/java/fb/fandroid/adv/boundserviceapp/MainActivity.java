@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -35,12 +36,15 @@ public class MainActivity extends AppCompatActivity {
     boolean mServiceBound = false;
     private int progressStatus=0;
 
-    private static String LOG_TAG = "MainActivity";
+    BoundServiceConnection boundServConn;
+
+    private static String LOG_TAG =  "BoundService";
 
     TextView testTxt;
-    ProgressBar progressBar ;
+
     final Messenger messenger = new Messenger(new IncomingHandler());
     Messenger toServiceMessenger;
+    public ProgressBar progressBar;
 
     private void showMessage(String string) {
         Toast.makeText(this, string, Toast.LENGTH_LONG).show();
@@ -51,12 +55,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        Button stopServiceButon = (Button) findViewById(R.id.stop_service);
+        Button startScheduleBth =(Button)findViewById(R.id.startScheduleBtn);
+        Button stopServiceButton = (Button) findViewById(R.id.stop_service);
         Button progressBarDownButton =(Button)findViewById(R.id.progressbar_down);
+
         final ProgressBar progressBar =(ProgressBar)findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);// visible the progress bar
 
+        Log.d(LOG_TAG,"MainActivity ..is creating");
 
 
         progressBarDownButton.setOnClickListener(new View.OnClickListener() {
@@ -64,18 +70,18 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (progressStatus>0) {
-                    progressStatus = progressStatus - 50;
+                   progressStatus = progressStatus - 50;
                     progressBar.setProgress(progressStatus);
                 }
             }
         });
 
 
-        stopServiceButon.setOnClickListener(new View.OnClickListener() {
+        stopServiceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mServiceBound) {
-                    unbindService(mServiceConnection);
+                    unbindService(boundServConn);
                     mServiceBound = false;
                 }
                 Intent intent = new Intent(MainActivity.this,
@@ -83,6 +89,23 @@ public class MainActivity extends AppCompatActivity {
                 stopService(intent);
             }
         });
+
+        startScheduleBth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Message msg = Message.obtain(null,BoundService.START_SCHEDULE);
+                msg.replyTo = messenger;
+
+                try {
+                    toServiceMessenger.send(msg);
+                }
+                catch (RemoteException e){
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
 
     }
 
@@ -92,35 +115,30 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         Intent intent = new Intent(this, BoundService.class);
         startService(intent);
-        bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+       // bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, BoundService.class),
+                (boundServConn = new BoundServiceConnection()),
+                Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         if (mServiceBound) {
-            unbindService(mServiceConnection);
+            unbindService(boundServConn);
             mServiceBound = false;
         }
     }
 
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            mServiceBound = false;
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            BoundService.MyBinder myBinder = (BoundService.MyBinder) service;
-            mBoundService = myBinder.getService();
-            mServiceBound = true;
+        unbindService(boundServConn);
+        stopService(new Intent(this,BoundService.class));//не забываем прибить ненужный сервис при завершении программы
+    }
 
 
-
-        }
-    };
 
     private class IncomingHandler extends Handler  {
 
@@ -128,17 +146,39 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg){
             switch (msg.what) {
                  case BoundService.START_SCHEDULE:
-                    Log.d(LOG_TAG,"(schedule)...get count");
-                    testTxt.setText(""+msg.arg1);
-                    //-------progress bar------------------
+                    Log.d(LOG_TAG,"(schedule)...start schedule command");
+                     //-------progress bar------------------
                     progressStatus=msg.arg1;
+
+                    Log.d(LOG_TAG,"progress status="+progressStatus);
+
                     progressBar.setProgress(progressStatus);
                     //-------------------------------
-
 
                     break;
             }
         }
 
     }
+
+    private class BoundServiceConnection implements ServiceConnection {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            toServiceMessenger = new Messenger(service);
+            //отправляем начальное значение счетчика
+            Message msg = Message.obtain(null, BoundService.SET_COUNT);
+            msg.replyTo = messenger;
+            msg.arg1 = 0; //наш счетчик
+            try {
+                toServiceMessenger.send(msg);
+            }
+            catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {	}
+    }
+
 }

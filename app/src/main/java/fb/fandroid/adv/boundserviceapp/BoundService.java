@@ -18,43 +18,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
-/*public void run() {
- // инкремент переменной счетчика
- counter=counter++;
- }
- }
-
- TimerTask updateProgressBar = new UpdateProgressBarTask();
- timer.scheduleAtFixedRate(updateProgressBar, 0, 2000); //2000millesec = 2sec
- //======================================================
-
- Marat Tanchuev, [11.07.18 13:06]
- да
-
- Marat Tanchuev, [11.07.18 13:06]
- вот так и делай
-
- Marat Tanchuev, [11.07.18 13:06]
- в run() пишешь что надо сделать и всё
-
- Marat Tanchuev, [11.07.18 13:06]
- и запускаешь как тут написано
- *
- *
- *
- */
-
 public class BoundService extends Service{
 
     public static final int START_SCHEDULE=1;
     public static final int STOP_SCHEDULE=2;
+    public static final int SET_COUNT=3;
 
     private ScheduledExecutorService mScheduledExecutorService;
 
     int count = 0;
 
     IncomingHandler inHandler;
-
     Messenger messenger;
     Messenger toActivityMessenger;
 
@@ -66,7 +40,7 @@ public class BoundService extends Service{
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.v(LOG_TAG, "in onCreate");
+        Log.d(LOG_TAG, "in onCreate");
 
         HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
@@ -80,27 +54,27 @@ public class BoundService extends Service{
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        Log.v(LOG_TAG, "in onBind");
-        return mBinder;
+
+    public IBinder onBind(Intent arg0) {
+        return messenger.getBinder();
     }
 
     @Override
     public void onRebind(Intent intent) {
-        Log.v(LOG_TAG, "in onRebind");
+        Log.d(LOG_TAG, "in onRebind");
         super.onRebind(intent);
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-        Log.v(LOG_TAG, "in onUnbind");
+        Log.d(LOG_TAG, "in onUnbind");
         return true;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.v(LOG_TAG, "in onDestroy");
+        Log.d(LOG_TAG, "in onDestroy");
 
     }
 
@@ -152,16 +126,13 @@ public class BoundService extends Service{
                             try {
                                 if( toActivityMessenger != null )
                                     toActivityMessenger.send(outMsg);
-    }
-                            catch (RemoteException e) {
+                                }
+                            catch (RemoteException e)
+                                {
                                 e.printStackTrace();
-}
+                                }
 
-                            //--------отправляем значение счетчика в активити
-
-
-
-                        }
+                         }
                     },1, 200, TimeUnit.MILLISECONDS);
 
                 break;
@@ -169,6 +140,14 @@ public class BoundService extends Service{
                 case STOP_SCHEDULE:
                     Log.d(LOG_TAG,"schedule...stop");
                      mScheduledExecutorService.shutdownNow();
+                    break;
+
+
+                case SET_COUNT:
+
+                    count = msg.arg1;
+                    Log.d(LOG_TAG,"initial count value ..set to 0");
+
                     break;
             }
 
