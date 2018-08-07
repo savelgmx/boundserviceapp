@@ -2,7 +2,6 @@ package fb.fandroid.adv.boundserviceapp;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -35,7 +34,7 @@ public class BoundService extends Service{
 
 
     private static String LOG_TAG = "BoundService";
-    private IBinder mBinder = new MyBinder();
+
 
     @Override
     public void onCreate() {
@@ -60,9 +59,9 @@ public class BoundService extends Service{
     }
 
     @Override
-    public void onRebind(Intent intent) {
+    public void onRebind(Intent arg0) {
         Log.d(LOG_TAG, "in onRebind");
-        super.onRebind(intent);
+        super.onRebind(arg0);
     }
 
     @Override
@@ -74,15 +73,15 @@ public class BoundService extends Service{
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(LOG_TAG, "in onDestroy");
+        Log.v(LOG_TAG, "in onDestroy");
+        mScheduledExecutorService.shutdownNow();
 
     }
 
 
-    public class MyBinder extends Binder {
-        BoundService getService() {
-            return BoundService.this;
-        }
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
     }
 
     //обработчик сообщений активити
@@ -131,6 +130,7 @@ public class BoundService extends Service{
                                 {
                                 e.printStackTrace();
                                 }
+                            //--------отправляем значение счетчика в активити
 
                          }
                     },1, 200, TimeUnit.MILLISECONDS);
@@ -151,23 +151,6 @@ public class BoundService extends Service{
                     break;
             }
 
-            //отправляем значение счетчика в активити
-            /*
-
-
-            Message outMsg = Message.obtain(inHandler, START_SCHEDULE);
-            outMsg.arg1 = count;
-            outMsg.replyTo = messenger;
-
-            try {
-                if( toActivityMessenger != null )
-                    toActivityMessenger.send(outMsg);
-            }
-            catch (RemoteException e) {
-                e.printStackTrace();
-            }
-
-                */
         }
     }
 }

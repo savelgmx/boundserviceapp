@@ -18,8 +18,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import fb.fandroid.adv.boundserviceapp.BoundService.MyBinder;
-
 /*
     При запуске приложения создать Bound Service
  в потоке которого постепенно будет меняться значение прогресса и,
@@ -32,19 +30,18 @@ import fb.fandroid.adv.boundserviceapp.BoundService.MyBinder;
  */
 
 public class MainActivity extends AppCompatActivity {
-    BoundService mBoundService;
+
+    private static String LOG_TAG =  "BoundService";
     boolean mServiceBound = false;
     private int progressStatus=0;
 
     BoundServiceConnection boundServConn;
+    ProgressBar progressBar;
 
-    private static String LOG_TAG =  "BoundService";
-
-    TextView testTxt;
 
     final Messenger messenger = new Messenger(new IncomingHandler());
     Messenger toServiceMessenger;
-    public ProgressBar progressBar;
+
 
     private void showMessage(String string) {
         Toast.makeText(this, string, Toast.LENGTH_LONG).show();
@@ -59,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         Button stopServiceButton = (Button) findViewById(R.id.stop_service);
         Button progressBarDownButton =(Button)findViewById(R.id.progressbar_down);
 
-        final ProgressBar progressBar =(ProgressBar)findViewById(R.id.progressBar);
+        progressBar =(ProgressBar)findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);// visible the progress bar
 
         Log.d(LOG_TAG,"MainActivity ..is creating");
@@ -93,16 +90,16 @@ public class MainActivity extends AppCompatActivity {
         startScheduleBth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Message msg = Message.obtain(null,BoundService.START_SCHEDULE);
+                Message msg = Message.obtain(null, BoundService.START_SCHEDULE);
                 msg.replyTo = messenger;
 
                 try {
                     toServiceMessenger.send(msg);
                 }
-                catch (RemoteException e){
+                catch (RemoteException e)
+                {
                     e.printStackTrace();
                 }
-
             }
         });
 
@@ -120,22 +117,13 @@ public class MainActivity extends AppCompatActivity {
                 (boundServConn = new BoundServiceConnection()),
                 Context.BIND_AUTO_CREATE);
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mServiceBound) {
-            unbindService(boundServConn);
-            mServiceBound = false;
-        }
-    }
-
     @Override
     protected void onDestroy(){
         super.onDestroy();
 
         unbindService(boundServConn);
         stopService(new Intent(this,BoundService.class));//не забываем прибить ненужный сервис при завершении программы
+        Log.d(LOG_TAG,"Service stopped");
     }
 
 
@@ -147,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what) {
                  case BoundService.START_SCHEDULE:
                     Log.d(LOG_TAG,"(schedule)...start schedule command");
+
                      //-------progress bar------------------
                     progressStatus=msg.arg1;
 
