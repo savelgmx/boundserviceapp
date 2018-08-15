@@ -23,6 +23,7 @@ public class BoundService extends Service{
     public static final int STOP_SCHEDULE=2;
     public static final int SET_COUNT=3;
 
+
     private ScheduledExecutorService mScheduledExecutorService;
 
     int count = 0;
@@ -132,15 +133,19 @@ public class BoundService extends Service{
                                 }
                             //--------отправляем значение счетчика в активити
 
+
+
                          }
                     },1, 200, TimeUnit.MILLISECONDS);
 
                 break;
 
                 case STOP_SCHEDULE:
-                    Log.d(LOG_TAG,"schedule...stop");
-                     mScheduledExecutorService.shutdownNow();
-                    break;
+
+                    mScheduledExecutorService.isShutdown();
+                      mScheduledExecutorService.shutdownNow();
+
+                break;
 
 
                 case SET_COUNT:
