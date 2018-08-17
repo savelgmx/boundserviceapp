@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        startService(intent);
+ //       startService(intent);
         bindService(intent,sConn, Context.BIND_AUTO_CREATE);
      }
 
