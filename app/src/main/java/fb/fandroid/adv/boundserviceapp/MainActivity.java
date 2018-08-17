@@ -1,8 +1,10 @@
 package fb.fandroid.adv.boundserviceapp;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,20 +34,37 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     private static String LOG_TAG =  "BoundService";
-    boolean mServiceBound = false;
-    private int progressStatus=0;
+     boolean bound = false;
+    ServiceConnection sConn;
+    Intent intent;
+    BoundService boundService;
 
-    BoundServiceConnection boundServConn;
+    private int progressStatus=0;
     ProgressBar progressBar;
 
-
-    final Messenger messenger = new Messenger(new IncomingHandler());
-    Messenger toServiceMessenger;
-
+    public IntentFilter mIntentFilter;
 
     private void showMessage(String string) {
         Toast.makeText(this, string, Toast.LENGTH_LONG).show();
     }
+
+    /*
+     Реализация ресивера прямо в активити. Поэтому можно спокойно обращаться к полям активити
+     */
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if (intent.getAction().equals(BoundService.ACTION_PROGRESSCOUNT_CHANGE)){
+
+                progressStatus=intent.getExtras().getInt(String.valueOf(BoundService.EXTRA_PROGRESS_STATUS));
+                 Log.d(LOG_TAG,"progress Status received by Main="+progressStatus);
+                progressBar.setProgress(progressStatus);//--меняем значение прогресс бара
+            }
+        }
+
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +77,27 @@ public class MainActivity extends AppCompatActivity {
 
         progressBar =(ProgressBar)findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);// visible the progress bar
+        //-----инициализируем связь с сервисом и передваемые в него интенты
+        // ----регистрируем бродкастресивер без регистрации он не будет работать-------------
 
+        intent = new Intent(this, BoundService.class);
+        sConn = new ServiceConnection() {
+
+            public void onServiceConnected(ComponentName name, IBinder binder) {
+                Log.d(LOG_TAG, "MainActivity onServiceConnected");
+                boundService = ((BoundService.MyBinder) binder).getService();
+                bound = true;
+            }
+
+            public void onServiceDisconnected(ComponentName name) {
+                Log.d(LOG_TAG, "MainActivity onServiceDisconnected");
+                bound = false;
+            }
+        };
+
+        mIntentFilter = new IntentFilter(BoundService.ACTION_PROGRESSCOUNT_CHANGE);
+        registerReceiver(mReceiver, mIntentFilter);
+        //------------------------------------------------
         Log.d(LOG_TAG,"MainActivity ..is creating");
 
 
@@ -77,9 +116,9 @@ public class MainActivity extends AppCompatActivity {
         stopServiceButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mServiceBound) {
-                    unbindService(boundServConn);
-                    mServiceBound = false;
+                if (bound) {
+                    unbindService(sConn);
+                    bound = false;
                 }
                 Intent intent = new Intent(MainActivity.this,
                         BoundService.class);
@@ -90,17 +129,8 @@ public class MainActivity extends AppCompatActivity {
         startScheduleBth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Message msg = Message.obtain(null, BoundService.START_SCHEDULE);
-                msg.replyTo = messenger;
 
-                try {
-                    toServiceMessenger.send(msg);
-                }
-                catch (RemoteException e)
-                {
-                    e.printStackTrace();
-                }
-            }
+             }
         });
 
 
@@ -110,64 +140,40 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Intent intent = new Intent(this, BoundService.class);
         startService(intent);
-       // bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
-        bindService(new Intent(this, BoundService.class),
-                (boundServConn = new BoundServiceConnection()),
-                Context.BIND_AUTO_CREATE);
-    }
+        bindService(intent,sConn, Context.BIND_AUTO_CREATE);
+     }
+
     @Override
+    protected void onStop() {
+        super.onStop();
+        if (!bound) return;
+        unbindService(sConn);
+        bound = false;
+    }
+
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        registerReceiver(mReceiver, mIntentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mReceiver);
+    }
+
     protected void onDestroy(){
         super.onDestroy();
 
-        unbindService(boundServConn);
-        stopService(new Intent(this,BoundService.class));//не забываем прибить ненужный сервис при завершении программы
+        if (!bound) return;
+        unbindService(sConn);
+        bound = false;
+
+        stopService(intent);//не забываем прибить ненужный сервис при завершении программы
         Log.d(LOG_TAG,"Service stopped");
-    }
-
-
-
-    private class IncomingHandler extends Handler  {
-
-        @Override
-        public void handleMessage(Message msg){
-            switch (msg.what) {
-                 case BoundService.START_SCHEDULE:
-                    Log.d(LOG_TAG,"(schedule)...start schedule command");
-
-                     //-------progress bar------------------
-                    progressStatus=msg.arg1;
-
-                    Log.d(LOG_TAG,"progress status="+progressStatus);
-
-                    progressBar.setProgress(progressStatus);
-                    //-------------------------------
-
-                    break;
-            }
-        }
-
-    }
-
-    private class BoundServiceConnection implements ServiceConnection {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            toServiceMessenger = new Messenger(service);
-            //отправляем начальное значение счетчика
-            Message msg = Message.obtain(null, BoundService.SET_COUNT);
-            msg.replyTo = messenger;
-            msg.arg1 = 0; //наш счетчик
-            try {
-                toServiceMessenger.send(msg);
-            }
-            catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {	}
     }
 
 }
