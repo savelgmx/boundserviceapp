@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 progressStatus=intent.getExtras().getInt(String.valueOf(BoundService.EXTRA_PROGRESS_STATUS));
                  Log.d(LOG_TAG,"progress Status received by Main="+progressStatus);
                 progressBar.setProgress(progressStatus);//--меняем значение прогресс бара
+                if (progressStatus==100){showMessage("Загрузка завершена");}
             }
         }
 
@@ -71,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button startScheduleBth =(Button)findViewById(R.id.startScheduleBtn);
         Button stopServiceButton = (Button) findViewById(R.id.stop_service);
         Button progressBarDownButton =(Button)findViewById(R.id.progressbar_down);
 
@@ -105,10 +105,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (progressStatus>0) {
-                   progressStatus = progressStatus - 50;
-                    progressBar.setProgress(progressStatus);
-                }
+               boundService.downGradeProgessBar(); //вызываем метод
+
             }
         });
 
@@ -126,13 +124,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        startScheduleBth.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-             }
-        });
-
 
     }
 
@@ -140,8 +131,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
- //       startService(intent);
-        bindService(intent,sConn, Context.BIND_AUTO_CREATE);
+         bindService(intent,sConn, Context.BIND_AUTO_CREATE);
      }
 
     @Override

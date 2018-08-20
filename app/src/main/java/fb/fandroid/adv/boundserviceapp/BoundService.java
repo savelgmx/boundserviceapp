@@ -13,8 +13,13 @@ public class BoundService extends Service {
 
 
     private int count;
+    private boolean canDownGrade;
+
+    private int counterValue;
+
     public static int EXTRA_PROGRESS_STATUS;//="EXTRA_PROGRESS_STATUS"
     public static final String ACTION_PROGRESSCOUNT_CHANGE="ACTION_PROGRESSCOUNT_CHANGE";
+
     Intent progressStatusIntent=new Intent(ACTION_PROGRESSCOUNT_CHANGE);
 
     final String LOG_TAG = "BoundService";
@@ -41,7 +46,18 @@ public class BoundService extends Service {
                 //здесь вызовем функцию которая прогресс статус инкрементит
                 if ((count<100 ))
                 {
-                    count=count+5;
+
+
+                    if (!canDownGrade)
+                    {
+                        count=count+5;
+                    }
+                    else if (canDownGrade)
+                    {
+                        count=counterValue;
+
+                    }
+
                 }
                 else if (count==100){count=0;} //progress  bar с заполнением 100% начинаем заполнять по новой1
 
@@ -55,7 +71,15 @@ public class BoundService extends Service {
     }
 
 
-    void CancelTimer(){
+    public int downGradeProgessBar(){
+
+        canDownGrade=true; //выставляем флаг который er
+        counterValue=count-50;
+        return counterValue;
+    }
+
+
+    void cancelTimer(){
         if (timer != null) {
             timer.cancel();
             timer = null;
