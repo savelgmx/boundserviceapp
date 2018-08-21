@@ -75,6 +75,7 @@ public class BoundService extends Service {
 
         canDownGrade=true; //выставляем флаг который er
         counterValue=count-50;
+        Log.d(LOG_TAG,"counter value "+counterValue);
         return counterValue;
     }
 
