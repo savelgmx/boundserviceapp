@@ -73,21 +73,22 @@ public class BoundService extends Service {
 
     public int downGradeProgessBar(){
 
-        canDownGrade=true; //выставляем флаг который er
+      /*  В любой момент по нажатию на кнопку шкала уменьшается на 50%, но не меньше 0%.
+        (75% -> 25%; 35% -> 0%)
+        */
+
+        canDownGrade=true; //выставляем флаг который позволяет уменьшать величину прогресс бара
         counterValue=count-50;
+        if (counterValue<0)
+        {
+            counterValue=0;
+            canDownGrade=false;
+        }
         Log.d(LOG_TAG,"counter value "+counterValue);
         return counterValue;
     }
 
 
-    void cancelTimer(){
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-            interval=0;
-            Log.d(LOG_TAG,"Cancel timer button was pressed");
-        }
-    }
 
     public IBinder onBind(Intent arg0) {
         Log.d(LOG_TAG, "BoundService onBind");
@@ -97,7 +98,8 @@ public class BoundService extends Service {
 
 
     class MyBinder extends Binder {
-        BoundService getService() {
+        BoundService getService()
+        {
             return BoundService.this;
         }
     }

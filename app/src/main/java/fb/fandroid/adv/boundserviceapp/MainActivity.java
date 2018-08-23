@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.d(LOG_TAG,"progressswbar Button was pressed");
+                Log.d(LOG_TAG,"progresssbar Button was pressed");
 
                boundService.downGradeProgessBar(); //вызываем метод
 
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Intent intent = new Intent(MainActivity.this,
                         BoundService.class);
-               // stopService(intent);
+                stopService(intent);
             }
         });
 
